@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// 1. Define the database connection
+datasource db {
+  provider = "postgresql" // We are using PostgreSQL
+  url      = env("DATABASE_URL") // The connection URL is loaded from the .env file
+}
+
+// 2. Define the Prisma Client generator
+generator client {
+  provider = "prisma-client-js" // Specifies that we want to generate a JavaScript/TypeScript client
+}
+
+// 3. Define the Data Models based on your PRD
+model User {
+  id        String   @id @default(cuid()) // Using CUID for unique IDs, which is great for web apps.
+  email     String   @unique
+  password  String // Will be a hashed password
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  boards Board[] // A user can have multiple boards
+  cards  Card[] // A user owns their cards directly for easy querying
+}
+
+model Board {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade) // Foreign key relationship to User
+
+  lists List[] // A board contains multiple lists
+}
+
+model List {
+  id        String   @id @default(cuid())
+  name      String
+  order     Int // To maintain the order of lists on the board
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade) // Foreign key to Board
+
+  cards Card[] // A list contains multiple cards
+}
+
+model Card {
+  id           String    @id @default(cuid())
+  companyName  String
+  roleName     String
+  jobUrl       String? // '?' makes the field optional (Nullable)
+  notes        String?   @db.Text // Use Text for potentially long markdown notes
+  appliedDate  DateTime?
+  nextDeadline DateTime?
+  salaryInfo   String?
+
+  order     Int // To maintain the order of cards within a list
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listId String
+  list   List   @relation(fields: [listId], references: [id], onDelete: Cascade) // Foreign key to List
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade) // Foreign key to User
+}
