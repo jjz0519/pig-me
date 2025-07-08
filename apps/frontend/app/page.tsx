@@ -10,6 +10,8 @@ type Props = Omit<ImageProps, "src"> & {
 const ThemeImage = (props: Props) => {
   const { srcLight, srcDark, ...rest } = props;
 
+  console.log('API Base URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+
   return (
     <>
       <Image {...rest} src={srcLight} className="imgLight" />
