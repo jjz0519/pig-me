@@ -12,7 +12,7 @@
     "baseUrl": "./",
     "paths": {
       "@repo/database": [
-        "../../packages/database"
+        "../../packages/database/index.ts"
       ]
     },
     "incremental": true,
