@@ -6,8 +6,6 @@ import {AuthGuard} from '@nestjs/passport';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-
-  // --- Add this new protected route ---
   @UseGuards(AuthGuard('jwt')) // Apply the guard, 'jwt' is the default name for our JwtStrategy
   @Get('profile')
   getProfile(@Req() req) {
