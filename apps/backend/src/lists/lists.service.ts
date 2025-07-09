@@ -11,6 +11,10 @@ export class ListsService {
     constructor(private prisma: PrismaService) {
     }
 
+    /**
+     * Creates a new list in the specified board for the given user.
+     * Validates the user's ownership of the board before creating the list.
+     * The order of the list is automatically calculated based on the existing lists in the*/
     async create(userId: string, createListDto: CreateListDto) {
         const {boardId, name} = createListDto;
         this.logger.log(`Attempting to create list "${name}" in board ${boardId} for user ${userId}`);
@@ -44,6 +48,16 @@ export class ListsService {
         return list;
     }
 
+    /**
+     * Updates an existing list specified by its ID with the provided data.
+     *
+     * @param {string} listId - The ID of the list to be updated.
+     * @param {string} userId - The ID of the user attempting to update the list.
+     * @param {UpdateListDto} updateListDto - An object containing the updated list data.
+     * @return {Promise<Object>} A promise that resolves to the updated list object.
+     * @throws {NotFoundException} If the list with the specified ID is not found.
+     * @throws {ForbiddenException} If the user does not own the list or lacks the required permissions.
+     */
     async update(listId: string, userId: string, updateListDto: UpdateListDto) {
         this.logger.log(`Attempting to update list ${listId} by user ${userId}`);
         const list = await this.prisma.list.findUnique({
@@ -69,6 +83,15 @@ export class ListsService {
         return updatedList;
     }
 
+    /**
+     * Deletes a list from the database if it exists and if the user has the proper permissions.
+     *
+     * @param {string} listId - The unique identifier of the list to be deleted.
+     * @param {string} userId - The unique identifier of the user attempting to delete the list.
+     * @return {Promise<object>} A promise that resolves to an object containing a success message if the deletion is successful.
+     * @throws {NotFoundException} If the list with the provided ID does not exist.
+     * @throws {ForbiddenException} If the user does not have permission to delete the list.
+     */
     async remove(listId: string, userId: string) {
         this.logger.log(`Attempting to delete list ${listId} by user ${userId}`);
         const list = await this.prisma.list.findUnique({

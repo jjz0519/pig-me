@@ -11,6 +11,17 @@ export class CardsService {
     constructor(private prisma: PrismaService) {
     }
 
+    /**
+     * Creates a new card in the specified list for a user.
+     *
+     * @param {string} userId - The ID of the user attempting to create the card.
+     * @param {CreateCardDto} createCardDto - An object containing the data required for card creation.
+     * @param {string} createCardDto.listId - The ID of the list where the card will be created.
+     * @param {string} createCardDto.companyName - The name of the company associated with the card.
+     * @param {string} [createCardDto.roleName] - The name of the role associated with the card (optional).
+     * @return {Promise<Object>} A promise that resolves to the newly created card object.
+     * @throws {ForbiddenException} If the user does not have access to the specified list.
+     */
     async create(userId: string, createCardDto: CreateCardDto) {
         const {listId, companyName} = createCardDto;
         this.logger.log(`Attempting to create card "${companyName}" in list ${listId} for user ${userId}`);
@@ -49,6 +60,15 @@ export class CardsService {
         return card;
     }
 
+    /**
+     * Moves a card to a new list or reorders it within the same list.
+     *
+     * @param {string} cardId - The unique identifier of the card to be moved.
+     * @param {string} userId - The ID of the user attempting to move the card.
+     * @param {MoveCardDto} moveCardDto - An object containing the new list ID and the new order index for the card.
+     * @return {Promise<object>} A promise that resolves with the updated card object after the move operation is completed.
+     * @throws {ForbiddenException} If the card does not exist or the user does not have permission to move the card.
+     */
     async move(cardId: string, userId: string, moveCardDto: MoveCardDto) {
         const {newListId, newOrder} = moveCardDto; // newOrder is now the target index (e.g., 0, 1, 2...)
 

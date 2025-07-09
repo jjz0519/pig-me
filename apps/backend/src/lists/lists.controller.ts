@@ -14,6 +14,14 @@ export class ListsController {
     constructor(private readonly listsService: ListsService) {
     }
 
+    /**
+     * POST /lists
+     * Handles the creation of a new list within a specified board.
+     * Logs the request and delegates the creation task to the list service.
+     *
+     * @param {CreateListDto} createListDto - The data transfer object containing the details of the list to be created, including the target board ID.
+     * @param {Request} req - The HTTP request object, including user information to identify the requester.
+     * @return {Promise<any>} A promise resolving to the result of the list creation*/
     @Post()
     create(@Body() createListDto: CreateListDto, @Req() req: Request) {
         const userId = (req.user as any).id;
@@ -21,6 +29,11 @@ export class ListsController {
         return this.listsService.create(userId, createListDto);
     }
 
+    /**
+     * PATCH /lists/:id
+     * Updates a specific list with the provided data.
+     *
+     **/
     @Patch(':id')
     update(
         @Param('id') id: string,
@@ -32,6 +45,14 @@ export class ListsController {
         return this.listsService.update(id, userId, updateListDto);
     }
 
+    /**
+     * DELETE /lists/:id
+     * Deletes a list by its unique identifier.
+     *
+     * @param {string} id - The unique identifier of the list to delete.
+     * @param {Request} req - The HTTP request object containing the user information.
+     * @return {Promise<any>} A promise that resolves to the result of the delete operation.
+     */
     @Delete(':id')
     remove(@Param('id') id: string, @Req() req: Request) {
         const userId = (req.user as any).id;

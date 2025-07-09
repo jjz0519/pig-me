@@ -10,6 +10,10 @@ export class AuthController {
 
     private readonly logger = new Logger(AuthController.name);
 
+    /**
+     * POST /auth/register
+     * Handles user registration by receiving registration data, validating it, and passing it to the authentication service.
+     **/
     @Post('register')
     // NestJS will automatically validate it against the rules we defined
     async register(@Body() registerDto: RegisterDto) {
@@ -17,6 +21,13 @@ export class AuthController {
         return this.authService.register(registerDto);
     }
 
+    /**
+     * POST /auth/login
+     * Handles the user login request.
+     *
+     * @param {LoginDto} loginDto - An object containing the login details, including email and password.
+     * @return {Promise<any>} A promise that resolves with the authentication result or an error if login fails.
+     */
     @Post('login')
     @HttpCode(HttpStatus.OK)
     async login(@Body() loginDto: LoginDto) {
