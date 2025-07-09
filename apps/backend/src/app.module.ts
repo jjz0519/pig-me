@@ -2,8 +2,8 @@ import {Module} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config'; // <-- 1. 导入 ConfigModule
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
-import {PrismaService} from './prisma.service';
 import {AuthModule} from './auth/auth.module';
+import {PrismaModule} from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -12,9 +12,9 @@ import {AuthModule} from './auth/auth.module';
       envFilePath: '.env',
     }),
     AuthModule,
+    PrismaModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
-  exports: [PrismaService],
+  providers: [AppService],
 })
 export class AppModule {}

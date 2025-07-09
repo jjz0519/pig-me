@@ -3,15 +3,24 @@ import {AuthService} from './auth.service';
 import {AuthController} from './auth.controller';
 import {PassportModule} from '@nestjs/passport';
 import {JwtModule} from '@nestjs/jwt';
-import * as Process from "node:process";
+import {PrismaModule} from '../prisma/prisma.module';
+import {ConfigModule, ConfigService} from '@nestjs/config'; // <-- Import ConfigModule and ConfigService
 
 @Module({
     imports: [
+        PrismaModule,
         PassportModule,
-        JwtModule.register({
-            secret: Process.env.JWT_SECRET,
-            signOptions: {expiresIn: '1d'}, // <-- Token expires in 1 day
+        // --- This is the new, asynchronous way to register the module ---
+        JwtModule.registerAsync({
+            imports: [ConfigModule], // Make ConfigModule available
+            useFactory: async (configService: ConfigService) => ({
+                // Read the secret from the .env file via ConfigService
+                secret: configService.get<string>('JWT_SECRET'),
+                signOptions: {expiresIn: '1d'},
+            }),
+            inject: [ConfigService], // Inject ConfigService into the factory
         }),
+        // --- End of new configuration ---
     ],
     providers: [AuthService],
     controllers: [AuthController],
