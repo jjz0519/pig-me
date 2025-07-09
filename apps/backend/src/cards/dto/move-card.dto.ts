@@ -1,7 +1,7 @@
-import {IsInt, IsNotEmpty, IsUUID} from 'class-validator';
+import {IsInt, IsNotEmpty, IsString} from 'class-validator';
 
 export class MoveCardDto {
-    @IsUUID()
+    @IsString()
     @IsNotEmpty()
     newListId!: string;
 

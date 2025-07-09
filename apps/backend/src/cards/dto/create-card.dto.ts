@@ -1,4 +1,4 @@
-import {IsNotEmpty, IsString, IsUUID} from 'class-validator';
+import {IsNotEmpty, IsString} from 'class-validator';
 
 export class CreateCardDto {
     @IsString()
@@ -9,7 +9,7 @@ export class CreateCardDto {
     @IsNotEmpty()
     roleName!: string;
 
-    @IsUUID()
+    @IsString()
     @IsNotEmpty()
     listId!: string;
 }

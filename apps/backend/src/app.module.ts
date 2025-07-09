@@ -6,6 +6,7 @@ import {AuthModule} from './auth/auth.module';
 import {PrismaModule} from './prisma/prisma.module';
 import {BoardsModule} from './boards/boards.module';
 import {CardsModule} from './cards/cards.module';
+import {ListsModule} from './lists/lists.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import {CardsModule} from './cards/cards.module';
     PrismaModule,
     BoardsModule,
     CardsModule,
+    ListsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
