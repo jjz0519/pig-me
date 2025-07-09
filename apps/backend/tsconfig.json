@@ -9,10 +9,10 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
       "@repo/database": [
-        "../../packages/database/index.ts"
+        "../../packages/database"
       ]
     },
     "incremental": true,
