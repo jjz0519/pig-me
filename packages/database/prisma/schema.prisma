@@ -59,7 +59,7 @@ model Card {
   nextDeadline DateTime?
   salaryInfo   String?
 
-  order     Int // To maintain the order of cards within a list
+  order Float // Changed from Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

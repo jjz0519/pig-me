@@ -1,39 +1,40 @@
-import {ForbiddenException, Injectable, NotFoundException,} from '@nestjs/common';
+import {ForbiddenException, Injectable, Logger,} from '@nestjs/common';
 import {PrismaService} from '../prisma/prisma.service';
 import {CreateCardDto} from './dto/create-card.dto';
 import {MoveCardDto} from './dto/move-card.dto';
 
 @Injectable()
 export class CardsService {
+    // Initialize Logger
+    private readonly logger = new Logger(CardsService.name);
+
     constructor(private prisma: PrismaService) {
     }
 
     async create(userId: string, createCardDto: CreateCardDto) {
-        const {listId, ...cardData} = createCardDto;
+        const {listId, companyName} = createCardDto;
+        this.logger.log(`Attempting to create card "${companyName}" in list ${listId} for user ${userId}`);
 
-        // Verify that the list belongs to the user
         const list = await this.prisma.list.findUnique({
             where: {id: listId},
             include: {board: true},
         });
 
         if (!list || list.board.userId !== userId) {
-            throw new ForbiddenException(
-                'You do not have permission to add a card to this list.',
-            );
+            this.logger.warn(`Create failed: User ${userId} does not have access to list ${listId}.`);
+            throw new ForbiddenException('You do not have permission to add a card to this list.');
         }
 
-        // Get the current max order in the list and add 1
         const maxOrderCard = await this.prisma.card.findFirst({
             where: {listId},
             orderBy: {order: 'desc'},
         });
         const newOrder = maxOrderCard ? maxOrderCard.order + 1 : 0;
 
-
         const card = await this.prisma.card.create({
             data: {
-                ...cardData,
+                companyName: createCardDto.companyName,
+                roleName: createCardDto.roleName,
                 order: newOrder,
                 list: {
                     connect: {id: listId},
@@ -44,76 +45,50 @@ export class CardsService {
             },
         });
 
+        this.logger.log(`Successfully created card ${card.id} in list ${listId}`);
         return card;
     }
 
     async move(cardId: string, userId: string, moveCardDto: MoveCardDto) {
-        const {newListId, newOrder} = moveCardDto;
+        const {newListId, newOrder} = moveCardDto; // newOrder is now the target index (e.g., 0, 1, 2...)
 
-        // 1. Find the card and verify ownership
-        const cardToMove = await this.prisma.card.findUnique({
+        const cardToMove = await this.prisma.card.findUnique({where: {id: cardId}});
+        if (!cardToMove || cardToMove.userId !== userId) {
+            throw new ForbiddenException('Permission denied.');
+        }
+
+        const cardsInNewList = await this.prisma.card.findMany({
+            where: {listId: newListId, id: {not: cardId}},
+            orderBy: {order: 'asc'},
+        });
+
+        let calculatedOrder: number;
+
+        const prevCard = cardsInNewList[newOrder - 1];
+        const nextCard = cardsInNewList[newOrder];
+
+        const prevOrder = prevCard ? prevCard.order : null;
+        const nextOrder = nextCard ? nextCard.order : null;
+
+        if (prevOrder !== null && nextOrder !== null) {
+            calculatedOrder = (prevOrder + nextOrder) / 2;
+        } else if (prevOrder !== null) {
+            calculatedOrder = prevOrder + 1;
+        } else if (nextOrder !== null) {
+            calculatedOrder = nextOrder - 1;
+        } else {
+            calculatedOrder = 1; // Or any initial value
+        }
+
+        const updatedCard = await this.prisma.card.update({
             where: {id: cardId},
+            data: {
+                listId: newListId,
+                order: calculatedOrder,
+            },
         });
 
-        if (!cardToMove) {
-            throw new NotFoundException(`Card with ID ${cardId} not found.`);
-        }
-
-        if (cardToMove.userId !== userId) {
-            throw new ForbiddenException('You do not have permission to move this card.');
-        }
-
-        // 2. Verify the target list exists and belongs to the user
-        const targetList = await this.prisma.list.findUnique({
-            where: {id: newListId},
-            include: {board: true},
-        });
-
-        if (!targetList || targetList.board.userId !== userId) {
-            throw new ForbiddenException('You do not have permission to move a card to this list.');
-        }
-
-        const oldListId = cardToMove.listId;
-
-        // 3. Use a transaction to ensure data integrity
-        await this.prisma.$transaction(async (tx) => {
-            // Decrement order of cards in the old list that were after the moved card
-            await tx.card.updateMany({
-                where: {
-                    listId: oldListId,
-                    order: {gt: cardToMove.order},
-                },
-                data: {
-                    order: {
-                        decrement: 1,
-                    },
-                },
-            });
-
-            // Increment order of cards in the new list that are at or after the new position
-            await tx.card.updateMany({
-                where: {
-                    listId: newListId,
-                    order: {gte: newOrder},
-                },
-                data: {
-                    order: {
-                        increment: 1,
-                    },
-                },
-            });
-
-
-            // 4. Update the card itself
-            await tx.card.update({
-                where: {id: cardId},
-                data: {
-                    listId: newListId,
-                    order: newOrder,
-                },
-            });
-        });
-
-        return {message: 'Card moved successfully.'};
+        this.logger.log(`Successfully moved card ${cardId} with new order ${calculatedOrder}`);
+        return updatedCard;
     }
 }

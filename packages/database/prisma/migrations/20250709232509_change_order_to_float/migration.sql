@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Card"
+    ALTER COLUMN "order" SET DATA TYPE DOUBLE PRECISION;
