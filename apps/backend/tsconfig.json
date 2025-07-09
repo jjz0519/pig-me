@@ -1,4 +1,7 @@
 {
+  // This extends the base configuration from your shared typescript-config package.
+  // Although you haven't created it yet for backend, it's good practice.
+  // "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
@@ -9,10 +12,13 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
+    // We tell TypeScript where to find the alias.
     "baseUrl": ".",
     "paths": {
+      // This path must point to the SOURCE file of your package,
+      // not a directory. This is crucial.
       "@repo/database": [
-        "../../packages/database"
+        "../../packages/database/index.ts"
       ]
     },
     "incremental": true,
@@ -22,5 +28,12 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  // --- ADD THIS "include" ARRAY ---
+  // This tells the NestJS TypeScript compiler to also look inside the packages
+  // directory, which is necessary for it to "see" the source code of @repo/database.
+  "include": [
+    "src/**/*",
+    "../../packages/database/index.ts"
+  ]
 }
