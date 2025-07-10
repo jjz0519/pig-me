@@ -2,11 +2,11 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import {Button} from '@/components/ui/button';
 import {useAuth} from '@/context/AuthContext';
 import {Board, getBoardById, getBoards} from '@/services/boardService';
 import KanbanBoard from '@/components/KanbanBoard';
 import {DragEndEvent} from '@dnd-kit/core';
+import {Button} from "@heroui/react";
 
 type BoardWithListsAndCards = Board;
 
@@ -115,12 +115,10 @@ function BoardPage() {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
-            <header className="flex justify-between items-center p-4 border-b dark:border-gray-700 flex-shrink-0">
+        <div className="flex flex-col h-screen bg-gray-50">
+            <header className="flex justify-between items-center p-4 border-b">
                 <h1 className="text-2xl font-bold">{board?.name || 'My Board'}</h1>
-                <Button variant="outline" onClick={logout}>
-                    Logout
-                </Button>
+                <Button color="primary" onPress={logout}>Logout</Button>
             </header>
             <main className="flex-grow overflow-x-auto">
                 {board ? (
