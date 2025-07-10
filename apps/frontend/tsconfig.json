@@ -5,6 +5,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@repo/database": [
+        "../../packages/database"
       ]
     },
     "plugins": [
