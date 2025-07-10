@@ -7,9 +7,7 @@ import {useAuth} from '@/context/AuthContext';
 import {Board, getBoardById, getBoards} from '@/services/boardService';
 import KanbanBoard from '@/components/KanbanBoard';
 import {DragEndEvent} from '@dnd-kit/core';
-import {arrayMove} from '@dnd-kit/sortable';
 
-// A more specific type for the board state to ensure type safety
 type BoardWithListsAndCards = Board;
 
 function BoardPage() {
@@ -24,11 +22,14 @@ function BoardPage() {
                 setLoading(true);
                 setError(null);
                 const boards = await getBoards();
-                if (boards && boards.length > 0) {
-                    const firstBoardId = boards[0].id;
-                    const boardData = await getBoardById(firstBoardId);
+                const firstBoard = boards?.[0];
+
+                // If a first board exists, fetch its detailed data
+                if (firstBoard) {
+                    const boardData = await getBoardById(firstBoard.id);
                     setBoard(boardData);
                 } else {
+                    // Handle case where user has no boards
                     setError("No boards found. Let's create one!");
                 }
             } catch (err) {
@@ -45,48 +46,62 @@ function BoardPage() {
     const handleDragEnd = useCallback((event: DragEndEvent) => {
         const {active, over} = event;
 
-        if (!over) return;
-
-        if (active.id !== over.id) {
-            setBoard((prevBoard) => {
-                if (!prevBoard) return null;
-
-                const activeListIndex = prevBoard.lists.findIndex(list => list.cards.some(card => card.id === active.id));
-                const overListIndex = prevBoard.lists.findIndex(list => list.cards.some(card => card.id === over.id) || list.id === over.id);
-
-                if (activeListIndex === -1 || overListIndex === -1) return prevBoard;
-
-                const newBoard = {...prevBoard};
-                const activeList = newBoard.lists[activeListIndex];
-                const overList = newBoard.lists[overListIndex];
-
-                const activeCardIndex = activeList.cards.findIndex(card => card.id === active.id);
-
-                // Handle cross-list dragging
-                if (activeList.id !== overList.id) {
-                    const [movedCard] = activeList.cards.splice(activeCardIndex, 1);
-
-                    const overCardIndex = overList.cards.findIndex(card => card.id === over.id);
-
-                    if (overCardIndex !== -1) {
-                        overList.cards.splice(overCardIndex, 0, movedCard);
-                    } else {
-                        // Dropping into an empty list or at the end
-                        overList.cards.push(movedCard);
-                    }
-                } else { // Handle same-list sorting
-                    const overCardIndex = overList.cards.findIndex(card => card.id === over.id);
-                    if (activeCardIndex !== overCardIndex) {
-                        overList.cards = arrayMove(overList.cards, activeCardIndex, overCardIndex);
-                    }
-                }
-
-                // Here you would typically call an API to update the backend
-                // Example: api.patch(`/cards/${active.id}/move`, { newListId: overList.id, newOrder: overList.cards.findIndex(c => c.id === active.id) });
-
-                return newBoard;
-            });
+        if (!over || active.id === over.id) {
+            return;
         }
+
+        setBoard((prevBoard) => {
+            if (!prevBoard) return null;
+
+            const activeListIndex = prevBoard.lists.findIndex((list) =>
+                list.cards.some((card) => card.id === active.id)
+            );
+            const overListIndex = prevBoard.lists.findIndex(
+                (list) => list.id === over.id || list.cards.some((card) => card.id === over.id)
+            );
+
+            if (activeListIndex === -1 || overListIndex === -1) {
+                return prevBoard;
+            }
+
+            const activeList = prevBoard.lists[activeListIndex];
+            const overList = prevBoard.lists[overListIndex];
+
+            if (!activeList || !overList) {
+                return prevBoard;
+            }
+
+            const newBoard = JSON.parse(JSON.stringify(prevBoard));
+            const sourceList = newBoard.lists[activeListIndex];
+            const destinationList = newBoard.lists[overListIndex];
+            const activeCardIndex = sourceList.cards.findIndex((card: { id: string; }) => card.id === active.id);
+
+            if (activeCardIndex === -1) {
+                return prevBoard;
+            }
+
+            const [movedCard] = sourceList.cards.splice(activeCardIndex, 1);
+
+            if (sourceList.id === destinationList.id) {
+                // Same list sorting
+                const overCardIndex = destinationList.cards.findIndex((card: { id: string; }) => card.id === over.id);
+                if (overCardIndex !== -1) {
+                    destinationList.cards.splice(overCardIndex, 0, movedCard);
+                }
+            } else {
+                // Cross-list moving
+                const overCardIndex = destinationList.cards.findIndex((card: { id: string; }) => card.id === over.id);
+                if (overCardIndex !== -1) {
+                    destinationList.cards.splice(overCardIndex, 0, movedCard);
+                } else {
+                    destinationList.cards.push(movedCard);
+                }
+            }
+
+            console.log(`Card ${active.id} moved to List ${destinationList.id}`);
+
+            return newBoard;
+        });
     }, []);
 
     if (loading) {

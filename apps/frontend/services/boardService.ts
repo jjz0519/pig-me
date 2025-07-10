@@ -3,14 +3,14 @@ import api from './api';
 // We need to define the types for Board, List, and Card based on your Prisma schema.
 // For now, we'll use 'any' as a placeholder.
 // It's highly recommended to replace these with actual types for type safety.
-interface Card {
+export interface Card {
     id: string;
     companyName: string;
     roleName: string;
     // ... other card properties
 }
 
-interface List {
+export interface List {
     id: string;
     name: string;
     cards: Card[];
