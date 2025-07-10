@@ -2,11 +2,13 @@
 
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {AuthForm} from '@/components/AuthForm';
+import {AuthForm} from '../../components/AuthForm';
 import api from '../../services/api';
+import {useAuth} from '@/context/AuthContext';
 
 export default function LoginPage() {
     const router = useRouter();
+    const {login} = useAuth();
     const [error, setError] = useState('');
 
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -19,7 +21,7 @@ export default function LoginPage() {
         try {
             const response = await api.post('/auth/login', {email, password});
             if (response.data.access_token) {
-                localStorage.setItem('access_token', response.data.access_token);
+                login(response.data.access_token);
                 router.push('/board');
             }
         } catch (err: any) {

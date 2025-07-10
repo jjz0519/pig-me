@@ -5,6 +5,7 @@ import {useRouter} from 'next/navigation';
 
 interface AuthContextType {
     isAuthenticated: boolean;
+    login: (token: string) => void;
     logout: () => void;
     isLoading: boolean;
 }
@@ -25,13 +26,17 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
     const router = useRouter();
 
     useEffect(() => {
-        // Check for token in localStorage on initial load
         const token = localStorage.getItem('access_token');
         if (token) {
             setIsAuthenticated(true);
         }
         setIsLoading(false);
     }, []);
+
+    const login = (token: string) => {
+        localStorage.setItem('access_token', token);
+        setIsAuthenticated(true);
+    };
 
     const logout = () => {
         localStorage.removeItem('access_token');
@@ -41,6 +46,7 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
 
     const value = {
         isAuthenticated,
+        login,
         logout,
         isLoading,
     };

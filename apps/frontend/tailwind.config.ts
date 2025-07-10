@@ -2,13 +2,10 @@ import type {Config} from "tailwindcss"
 
 const config = {
     darkMode: "class",
-    // This 'content' array tells Tailwind where to look for class names.
-    // It's crucial that it points to all files where you use Tailwind classes.
     content: [
         './app/**/*.{js,ts,jsx,tsx,mdx}',
         './components/**/*.{js,ts,jsx,tsx,mdx}',
     ],
-    prefix: "",
     theme: {
         container: {
             center: true,
@@ -74,7 +71,7 @@ const config = {
             },
         },
     },
-    plugins: [require("tailwindcss-animate")],
+    plugins: [], // This can now be empty
 } satisfies Config
 
 export default config
