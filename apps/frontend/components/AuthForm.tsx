@@ -14,15 +14,17 @@ interface AuthFormProps {
 
 export const AuthForm: React.FC<AuthFormProps> = ({formType, onSubmit, errorMessage}) => {
     return (
-        <div className="flex items-center justify-center min-h-screen">
+        <main className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950 p-4">
             <Card className="w-full max-w-sm">
                 <form onSubmit={onSubmit}>
-                    <CardHeader>
-                        <CardTitle className="text-2xl">{formType === 'login' ? 'Login' : 'Sign Up'}</CardTitle>
+                    <CardHeader className="text-center">
+                        <CardTitle className="text-2xl font-bold tracking-tight">
+                            {formType === 'login' ? 'Welcome Back!' : 'Create an Account'}
+                        </CardTitle>
                         <CardDescription>
                             {formType === 'login'
-                                ? 'Enter your email below to login to your account.'
-                                : 'Enter your information to create an account.'}
+                                ? 'Enter your credentials to access your board.'
+                                : 'Get started tracking your job applications.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4">
@@ -40,31 +42,32 @@ export const AuthForm: React.FC<AuthFormProps> = ({formType, onSubmit, errorMess
                             <label htmlFor="password">Password</label>
                             <Input id="password" type="password" name="password" required minLength={6}/>
                         </div>
-                        {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+                        {errorMessage && <p className="text-sm font-medium text-destructive">{errorMessage}</p>}
                     </CardContent>
                     <CardFooter className="flex flex-col">
                         <Button type="submit" className="w-full">
-                            {formType === 'login' ? 'Sign in' : 'Create account'}
+                            {formType === 'login' ? 'Sign In' : 'Create Account'}
                         </Button>
-                        {formType === 'login' && (
-                            <div className="mt-4 text-center text-sm">
-                                Don&apos;t have an account?{" "}
-                                <Link href="/register" className="underline">
-                                    Sign up
-                                </Link>
-                            </div>
-                        )}
-                        {formType === 'register' && (
-                            <div className="mt-4 text-center text-sm">
-                                Already have an account?{" "}
-                                <Link href="/login" className="underline">
-                                    Sign in
-                                </Link>
-                            </div>
-                        )}
+                        <div className="mt-4 text-center text-sm">
+                            {formType === 'login' ? (
+                                <>
+                                    Don&apos;t have an account?{" "}
+                                    <Link href="/register" className="underline">
+                                        Sign up
+                                    </Link>
+                                </>
+                            ) : (
+                                <>
+                                    Already have an account?{" "}
+                                    <Link href="/login" className="underline">
+                                        Sign in
+                                    </Link>
+                                </>
+                            )}
+                        </div>
                     </CardFooter>
                 </form>
             </Card>
-        </div>
+        </main>
     );
 };
