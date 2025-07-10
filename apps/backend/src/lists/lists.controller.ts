@@ -1,9 +1,10 @@
-import {Body, Controller, Delete, Logger, Param, Patch, Post, Req, UseGuards,} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Req, UseGuards,} from '@nestjs/common';
 import {ListsService} from './lists.service';
 import {CreateListDto} from './dto/create-list.dto';
 import {UpdateListDto} from './dto/update-list.dto';
 import {AuthGuard} from '@nestjs/passport';
 import {Request} from 'express';
+import {PaginationDto} from '../common/dto/pagination.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('lists')
@@ -12,6 +13,21 @@ export class ListsController {
     private readonly logger = new Logger(ListsController.name);
 
     constructor(private readonly listsService: ListsService) {
+    }
+
+    /**
+     * GET /lists/:id
+     * Gets the details of a single list, including its cards (paginated).
+     */
+    @Get(':id')
+    getListById(
+        @Param('id') id: string,
+        @Query() paginationDto: PaginationDto,
+        @Req() req: Request,
+    ) {
+        const userId = (req.user as any).id;
+        this.logger.log(`User ${userId} requested to get list ${id} with pagination`);
+        return this.listsService.getListById(id, userId, paginationDto);
     }
 
     /**

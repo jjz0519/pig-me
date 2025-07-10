@@ -1,4 +1,4 @@
-import {Body, Controller, Logger, Param, Patch, Post, Req, UseGuards,} from '@nestjs/common';
+import {Body, Controller, Get, Logger, Param, Patch, Post, Req, UseGuards,} from '@nestjs/common';
 import {AuthGuard} from '@nestjs/passport';
 import {CardsService} from './cards.service';
 import {CreateCardDto} from './dto/create-card.dto';
@@ -12,6 +12,17 @@ export class CardsController {
     private readonly logger = new Logger(CardsController.name);
 
     constructor(private readonly cardsService: CardsService) {
+    }
+
+    /**
+     * GET /cards/:id
+     * Gets the details of a single card by its ID.
+     */
+    @Get(':id')
+    getCardById(@Param('id') id: string, @Req() req: Request) {
+        const userId = (req.user as any).id;
+        this.logger.log(`User ${userId} requested to get card ${id}`);
+        return this.cardsService.getCardById(id, userId);
     }
 
     /**

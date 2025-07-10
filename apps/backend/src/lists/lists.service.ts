@@ -2,6 +2,7 @@ import {ForbiddenException, Injectable, Logger, NotFoundException,} from '@nestj
 import {PrismaService} from '../prisma/prisma.service';
 import {CreateListDto} from './dto/create-list.dto';
 import {UpdateListDto} from './dto/update-list.dto';
+import {PaginationDto} from "../common/dto/pagination.dto";
 
 @Injectable()
 export class ListsService {
@@ -10,6 +11,66 @@ export class ListsService {
 
     constructor(private prisma: PrismaService) {
     }
+
+    /**
+     * Retrieves a list by its ID along with its associated cards, applying pagination.
+     *
+     * @param {string} listId - The unique identifier of the list to retrieve.
+     * @param {string} userId - The ID of the user requesting the list, used for authorization.
+     * @param {PaginationDto} paginationDto - The pagination parameters including page number and limit.
+     * @return {Promise<Object>} An object containing the list details, the associated cards,
+     *                           and pagination information. Throws exceptions if the list is not
+     *                           found or if authorization fails.
+     */
+    async getListById(listId: string, userId: string, paginationDto: PaginationDto) {
+        this.logger.log(`Attempting to find list ${listId} for user ${userId}`);
+        const {page = 1, limit = 10} = paginationDto;
+        const skip = (page - 1) * limit;
+
+        const list = await this.prisma.list.findUnique({
+            where: {id: listId},
+            include: {board: true},
+        });
+
+        if (!list) {
+            this.logger.warn(`List with ID ${listId} not found.`);
+            throw new NotFoundException(`List with ID ${listId} not found.`);
+        }
+
+        if (list.board.userId !== userId) {
+            this.logger.warn(`User ${userId} does not have permission to access list ${listId}.`);
+            throw new ForbiddenException('You do not have permission to access this list.');
+        }
+
+        // Fetch paginated cards and total card count simultaneously
+        const [cards, totalCards] = await this.prisma.$transaction([
+            this.prisma.card.findMany({
+                where: {listId},
+                orderBy: {order: 'asc'},
+                take: limit,
+                skip,
+            }),
+            this.prisma.card.count({
+                where: {listId},
+            }),
+        ]);
+
+        this.logger.log(`Found ${cards.length} cards for list ${listId} on page ${page}`);
+
+        const {board, ...listResult} = list; // Exclude board details from final list object
+
+        return {
+            ...listResult,
+            cards,
+            pagination: {
+                total: totalCards,
+                page,
+                limit,
+                totalPages: Math.ceil(totalCards / limit),
+            },
+        };
+    }
+
 
     /**
      * Creates a new list in the specified board for the given user.

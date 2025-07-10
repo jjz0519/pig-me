@@ -1,4 +1,4 @@
-import {ForbiddenException, Injectable, Logger,} from '@nestjs/common';
+import {ForbiddenException, Injectable, Logger, NotFoundException,} from '@nestjs/common';
 import {PrismaService} from '../prisma/prisma.service';
 import {CreateCardDto} from './dto/create-card.dto';
 import {MoveCardDto} from './dto/move-card.dto';
@@ -9,6 +9,37 @@ export class CardsService {
     private readonly logger = new Logger(CardsService.name);
 
     constructor(private prisma: PrismaService) {
+    }
+
+    /**
+     * Retrieves a card by its ID for a specified user.
+     *
+     * @param {string} cardId - The unique identifier of the card to be retrieved.
+     * @param {string} userId - The unique identifier of the user attempting to retrieve the card.
+     * @return {Promise<Object>} A promise that resolves to the card object if found and accessible by the user.
+     * @return {Promise<Object>} A promise that resolves to the card object if found and accessible by the user.
+     * @throws {NotFoundException} If the card with the specified ID is not found.
+     * @throws {ForbiddenException} If the user does not have permission to access the card.
+     */
+    async getCardById(cardId: string, userId: string) {
+        this.logger.log(`Attempting to find card ${cardId} for user ${userId}`);
+
+        const card = await this.prisma.card.findUnique({
+            where: {id: cardId},
+        });
+
+        if (!card) {
+            this.logger.warn(`Card with ID ${cardId} not found.`);
+            throw new NotFoundException(`Card with ID ${cardId} not found.`);
+        }
+
+        if (card.userId !== userId) {
+            this.logger.warn(`User ${userId} does not have permission to access card ${cardId}.`);
+            throw new ForbiddenException('You do not have permission to access this card.');
+        }
+
+        this.logger.log(`Successfully found card ${cardId}`);
+        return card;
     }
 
     /**
