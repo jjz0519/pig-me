@@ -1,6 +1,7 @@
-"use client";
-
-import {button as buttonStyles, Code, Link, Snippet} from "@heroui/react";
+import {Link} from "@heroui/link";
+import {Snippet} from "@heroui/snippet";
+import {Code} from "@heroui/code";
+import {button as buttonStyles} from "@heroui/theme";
 
 import {siteConfig} from "@/config/site";
 import {subtitle, title} from "@/components/primitives";

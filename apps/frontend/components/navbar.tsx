@@ -1,17 +1,17 @@
 import {
-    Button,
-    Input,
-    Kbd,
-    Link,
-    link as linkStyles,
     Navbar as HeroUINavbar,
     NavbarBrand,
     NavbarContent,
     NavbarItem,
     NavbarMenu,
     NavbarMenuItem,
-    NavbarMenuToggle
-} from "@heroui/react";
+    NavbarMenuToggle,
+} from "@heroui/navbar";
+import {Button} from "@heroui/button";
+import {Kbd} from "@heroui/kbd";
+import {Link} from "@heroui/link";
+import {Input} from "@heroui/input";
+import {link as linkStyles} from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
 
