@@ -2,7 +2,7 @@
 
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {AuthForm} from '../../components/AuthForm';
+import {AuthForm} from '@/components/AuthForm';
 import api from '../../services/api';
 import {useAuth} from '@/context/AuthContext';
 
